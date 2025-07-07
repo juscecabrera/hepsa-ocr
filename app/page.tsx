@@ -25,11 +25,10 @@ export default function HomePage() {
 
     for (const file of Array.from(files)) {
       try {
-        const imageData = await file.arrayBuffer();
-
+        // Use the File object directly, as Tesseract.recognize accepts File/Blob/ImageLike
         const {
           data: { text },
-        } = await Tesseract.recognize(imageData, 'spa', {
+        } = await Tesseract.recognize(file, 'spa', {
           logger: m => console.log(m),
         });
 
