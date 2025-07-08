@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Tesseract from 'tesseract.js';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 
 export default function HomePage() {
   const [files, setFiles] = useState<FileList | null>(null);
@@ -39,6 +43,7 @@ export default function HomePage() {
       }
     }
 
+    console.log(newResults)
     setResults(newResults);
     setMessage(`Se han procesado ${newResults.length} imagen(es) correctamente.`);
   };
@@ -114,23 +119,36 @@ export default function HomePage() {
   };
 
   return (
-    <main className="p-6 max-w-7xl mx-auto">
+    <main className="p-6 container mx-auto">
       <h1 className="text-2xl font-bold mb-4">Subir Imágenes para OCR</h1>
 
-      <form onSubmit={handleSubmit} className="mb-4">
-        <input
+      <form onSubmit={handleSubmit} className="mb-4 flex flex-row gap-4">
+        <Input 
+          type='file'
+          multiple
+          accept="image/*"
+          onChange={handleFileChange}
+          className="mb-2 border rounded w-[30%]"
+        />
+        {/* <input
           type="file"
           multiple
           accept="image/*"
           onChange={handleFileChange}
           className="mb-2 p-2 border rounded"
-        />
-        <button
+        /> */}
+        <Button
+          type="submit"
+          className=" text-white px-4 py-2 rounded"
+        >
+          Subir y Procesar
+        </Button>
+        {/* <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           Subir y Procesar
-        </button>
+        </button> */}
       </form>
 
       {message && (
@@ -141,49 +159,51 @@ export default function HomePage() {
 
       {results.length > 0 && (
         <>
-          <button
+          <Button
             onClick={downloadCSV}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-4"
+            variant="outline"
           >
             Descargar CSV
-          </button>
+          </Button>
 
-          <table className="mt-6 w-full border-collapse border border-black">
-            <thead>
-              <tr>
-                <th className="border border-black px-4 py-2">Fecha</th>
-                <th className="border border-black px-4 py-2">Numero de operacion</th>
-                <th className="border border-black px-4 py-2">Monto</th>
-                <th className="border border-black px-4 py-2">Cuenta Origen</th>
-                <th className="border border-black px-4 py-2">Cuenta Destino</th>
-                <th className="border border-black px-4 py-2">Destinatario</th>
-                <th className="border border-black px-4 py-2">Descripcion</th>
-              </tr>
-            </thead>
-            <tbody>
+          {/* Tabla de shadcn/ui */}
+          <Table className="mt-6 min-w-[100%]">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="border border-black px-4 py-2">Fecha</TableHead>
+                <TableHead className="border border-black px-4 py-2">Numero de operacion</TableHead>
+                <TableHead className="border border-black px-4 py-2">Monto</TableHead>
+                <TableHead className="border border-black px-4 py-2">Cuenta Origen</TableHead>
+                <TableHead className="border border-black px-4 py-2">Cuenta Destino</TableHead>
+                <TableHead className="border border-black px-4 py-2">Destinatario</TableHead>
+                <TableHead className="border border-black px-4 py-2">Descripcion (nombre de archivo)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {results.map((result, index) => (
-                <tr key={index}>
-                  <td className="border border-black px-4 py-2">
+                <TableRow key={index}>
+                  <TableCell className="border border-black px-4 py-2">
                     {extractFecha2025(result) || 'N/A'}
-                  </td>
-                  <td className="border border-black px-4 py-2">
+                  </TableCell>
+                  <TableCell className="border border-black px-4 py-2">
                     {extractNumeroOperacion(result) || 'N/A'}
-                  </td>
-                  <td className="border border-black px-4 py-2">
+                  </TableCell>
+                  <TableCell className="border border-black px-4 py-2">
                     {extractMontoFallback(result) || 'N/A'}
-                  </td>
-                  <td className="border border-black px-4 py-2">0000</td>
-                  <td className="border border-black px-4 py-2">0000</td>
-                  <td className="border border-black px-4 py-2">
+                  </TableCell>
+                  <TableCell className="border border-black px-4 py-2">0000</TableCell>
+                  <TableCell className="border border-black px-4 py-2">0000</TableCell>
+                  <TableCell className="border border-black px-4 py-2">
                     {extractDestinatario(result) || 'N/A'}
-                  </td>
-                  <td className="border border-black px-4 py-2">
+                  </TableCell>
+                  <TableCell className="border border-black px-4 py-2">
                     {removeFileExtension(files?.[index]?.name || '')}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </>
       )}
     </main>
