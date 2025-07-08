@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Tesseract from 'tesseract.js';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 
 export default function HomePage() {
