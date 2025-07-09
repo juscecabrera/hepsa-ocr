@@ -5,14 +5,19 @@ import Tesseract from 'tesseract.js';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
 
 export default function HomePage() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [results, setResults] = useState<string[]>([]);
   const [message, setMessage] = useState<string>('');
+  const [progress, setProgress] = useState<number>(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles(e.target.files);
+    setResults([]);
+    setMessage('');
+    setProgress(0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,26 +30,32 @@ export default function HomePage() {
 
     setMessage('Procesando imágenes...');
     const newResults: string[] = [];
+    const totalFiles = files.length;
 
-    for (const file of Array.from(files)) {
+    for (let i = 0; i < totalFiles; i++) {
+      const file = files[i];
       try {
-        // Use the File object directly, as Tesseract.recognize accepts File/Blob/ImageLike
         const {
           data: { text },
         } = await Tesseract.recognize(file, 'spa', {
-          logger: m => console.log(m),
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              setProgress(((i + m.progress) / totalFiles) * 100);
+            }
+          },
         });
 
         newResults.push(text.trim());
+        setResults([...newResults]); // Actualizar resultados en tiempo real
       } catch (err) {
         console.error(`Error procesando ${file.name}:`, err);
         newResults.push('Error al procesar esta imagen.');
+        setResults([...newResults]);
       }
     }
 
-    console.log(newResults)
-    setResults(newResults);
     setMessage(`Se han procesado ${newResults.length} imagen(es) correctamente.`);
+    setProgress(100);
   };
 
   function extractMontoFallback(input: string): string | null {
@@ -128,32 +139,27 @@ export default function HomePage() {
           accept="image/*"
           onChange={handleFileChange}
           className="mb-2 border rounded w-[30%]"
+          id='file-input'
         />
-        {/* <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleFileChange}
-          className="mb-2 p-2 border rounded"
-        /> */}
         <Button
           type="submit"
-          className=" text-white px-4 py-2 rounded"
+          className="text-white px-4 py-2 rounded"
         >
           Subir y Procesar
         </Button>
-        {/* <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Subir y Procesar
-        </button> */}
       </form>
 
       {message && (
         <p className={message.includes('Error') ? 'text-red-500' : 'text-green-500'}>
           {message}
         </p>
+      )}
+
+      {progress > 0 && (
+        <div className="my-4">
+          <p className='my-2'>Progreso: {Math.round(progress)}%</p>
+          <Progress value={progress} className="w-full" />
+        </div>
       )}
 
       {results.length > 0 && (
@@ -166,7 +172,6 @@ export default function HomePage() {
             Descargar CSV
           </Button>
 
-          {/* Tabla de shadcn/ui */}
           <Table className="mt-6 min-w-[100%]">
             <TableHeader>
               <TableRow>
